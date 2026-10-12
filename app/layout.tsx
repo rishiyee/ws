@@ -16,6 +16,21 @@ const inter = localFont({
 export const metadata: Metadata = {
   title: 'Kinfolk — Family directory',
   description: 'Your family and community in one place.',
+  applicationName: 'Kinfolk',
+  appleWebApp: {
+    capable: true,
+    title: 'Kinfolk',
+    statusBarStyle: 'default',
+  },
+  icons: {
+    icon: '/icon.svg',
+    apple: '/apple-touch-icon.png',
+  },
+};
+
+export const viewport = {
+  themeColor: '#f6f2ef',
+  viewportFit: 'cover' as const,
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
