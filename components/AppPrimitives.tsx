@@ -21,13 +21,13 @@ export function ContactActions({ memberId, demo = false }: { memberId: string; d
   const member = memberById(memberId);
   const phone = member?.phone ?? (memberId === 'admin' ? admin.phone : undefined);
   const email = member?.email ?? (memberId === 'admin' ? admin.email : undefined);
-  return <div className="flex w-full gap-3">{phone && <a className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-[#ff5500] px-4 text-[13px] font-medium text-white transition hover:bg-[#e64d08] active:scale-[.98]" href={`tel:${phone.replace(/[^+\d]/g, '')}`}><Phone size={17}/><span>{memberId === 'admin' ? 'Call admin' : 'Call'}</span></a>}{email && <a className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-white/80 px-4 text-[13px] font-medium text-[#25211e] transition hover:bg-white active:scale-[.98]" href={`mailto:${email}`}><Mail size={17}/><span>{memberId === 'admin' ? 'Email admin' : 'Email'}</span></a>}{demo && !phone && !email && <span className="text-xs text-[#77716a]">Contact details unavailable</span>}</div>;
+  return <div className="flex w-full gap-3">{phone && <a className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-[#ff5500] px-4 text-[13px] font-medium text-white transition hover:bg-[#e64d08] active:scale-[.98]" href={`tel:${phone.replace(/[^+\d]/g, '')}`}><Phone size={17}/><span>{memberId === 'admin' ? 'Call admin' : 'Call'}</span></a>}{email && <a className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-white/80 px-4 text-[13px] font-medium text-[#25211e] transition hover:bg-white active:scale-[.98]" href={`mailto:${email}`}><Mail size={17}/><span>{memberId === 'admin' ? 'Email admin' : 'Email'}</span></a>}{demo && !phone && !email && <span className="text-[12px] text-[#77716a]">Contact details unavailable</span>}</div>;
 }
 
 export function Blood({ id }: { id: string }) {
   const member = memberById(id);
   if (!member) return null;
-  return <span className="inline-flex items-center gap-1.5 text-[11px] text-[#81776d]">Blood group <strong className="font-medium text-[#5e554d]">{member.bloodGroup}</strong></span>;
+  return <span className="inline-flex items-center gap-1.5 text-[12px] text-[#81776d]">Blood group <strong className="font-medium text-[#5e554d]">{member.bloodGroup}</strong></span>;
 }
 
 export function SectionTitle({ children, action }: { children: ReactNode; action?: ReactNode }) {
@@ -57,13 +57,13 @@ export function BottomSheet({ title, close, children }: { title: string; close: 
 }
 
 export function Detail({ label, value }: { label: string; value: string }) {
-  return <div className="min-w-0"><dt className="text-[10px] text-[#999087]">{label}</dt><dd className="mt-1 break-words text-[12px] font-medium leading-5">{value}</dd></div>;
+  return <div className="min-w-0"><dt className="text-[12px] text-[#999087]">{label}</dt><dd className="mt-1 break-words text-[12px] font-medium leading-5">{value}</dd></div>;
 }
 
 export function ContactRow({ icon, label, value, href, copy, copied = false }: { icon: ReactNode; label: string; value: string; href: string; copy: () => void; copied?: boolean }) {
-  return <div className="flex min-h-[66px] items-center gap-3 border-b border-[#e3ddd5] last:border-0"><span className="grid size-9 shrink-0 place-items-center rounded-full bg-[#e8e1d9]">{icon}</span><a className="min-w-0 flex-1" href={href}><span className="block text-[10px] text-[#9b9085]">{label}</span><strong className="mt-1 block break-all text-[12px] font-medium">{value}</strong></a><Button onClick={copy} className="inline-flex min-h-12 items-center gap-1.5 rounded-xl px-2 text-[11px] text-[#8d7866]" aria-label={copied ? `${label} copied` : `Copy ${label}`}><span aria-live="polite" className="inline-flex items-center gap-1.5">{copied ? <Check size={14}/> : <Copy size={14}/>} {copied ? 'Copied' : 'Copy'}</span></Button></div>;
+  return <div className="flex min-h-[66px] items-center gap-3 border-b border-[#e3ddd5] last:border-0"><span className="grid size-9 shrink-0 place-items-center rounded-full bg-[#e8e1d9]">{icon}</span><a className="min-w-0 flex-1" href={href}><span className="block text-[12px] text-[#9b9085]">{label}</span><strong className="mt-1 block break-all text-[12px] font-medium">{value}</strong></a><Button onClick={copy} className="inline-flex min-h-12 items-center gap-1.5 rounded-xl px-2 text-[12px] text-[#8d7866]" aria-label={copied ? `${label} copied` : `Copy ${label}`}><span aria-live="polite" className="inline-flex items-center gap-1.5">{copied ? <Check size={14}/> : <Copy size={14}/>} {copied ? 'Copied' : 'Copy'}</span></Button></div>;
 }
 
 export function Empty({ title, text }: { title: string; text: string }) {
-  return <div className="rounded-[24px] bg-[#efece7] px-5 py-9 text-center"><span className="mx-auto grid size-12 place-items-center rounded-full bg-white/80"><Search size={19}/></span><h2 className="mt-3 text-[15px] font-medium">{title}</h2><p className="mt-2 text-[11px] text-[#817c76]">{text}</p></div>;
+  return <div className="rounded-[24px] bg-[#efece7] px-5 py-9 text-center"><span className="mx-auto grid size-12 place-items-center rounded-full bg-white/80"><Search size={19}/></span><h2 className="mt-3 text-[15px] font-medium">{title}</h2><p className="mt-2 text-[12px] text-[#817c76]">{text}</p></div>;
 }
