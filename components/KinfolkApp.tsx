@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from 'next/navigation';
-import { ArrowLeft, ArrowRight, Cake, CalendarDays, ChevronDown, ChevronRight, Heart, Mail, Megaphone, Phone, SlidersHorizontal, UserRound, UsersRound } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Cake, CalendarDays, ChevronDown, ChevronRight, Mail, Megaphone, Phone, SlidersHorizontal, UserRound, UsersRound } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import AddressMap from './AddressMap';
 import AppHeader from './AppHeader';
@@ -23,16 +23,71 @@ type ScreenProps = { memberId: string; go: (path: string) => void; back: () => v
 type Notice = { id: string; title: string; detail: string; destination: string; read: boolean; icon: ReactNode };
 
 function Home({ memberId, go, searchQuery, setSearchQuery }: ScreenProps & { searchQuery: string; setSearchQuery: (value: string) => void }) {
-  const todaysBirthdays = members.filter(member => member.birthday === 'October 12');
-  return <div className="space-y-6 px-[18px] pb-8 pt-2">
-    <section className="flex items-center justify-between"><div><p className="text-[12px] text-[#9c9690]">Monday, October 12</p><h2 className="mt-1 text-[18px] font-medium">Welcome back, {memberById(memberId)?.firstName}</h2><p className="mt-1 text-[12px] text-[#817c76]">Your family is close at hand.</p></div><span className="rounded-full border border-[#e5dfd8] px-3 py-2 text-[12px] text-[#7c7771]">Kinfolk community</span></section>
-    <SearchBox value={searchQuery} setValue={setSearchQuery}/>
+  const member = memberById(memberId);
+  const family = familyByMember(memberId);
+  const community = groupById(family?.groupId);
+  const todaysBirthdays = members.filter(person => person.birthday === 'October 12');
+  const familyCount = groups.reduce((total, group) => total + group.familyIds.length, 0);
+  const quickActions = [
+    { label: 'My family', detail: `${family?.memberIds.length ?? 0} members`, path: '/my-family', Icon: UserRound },
+    { label: 'Directory', detail: `${members.length} people`, path: '/directory', Icon: UsersRound },
+    { label: 'Birthdays', detail: `${todaysBirthdays.length} today`, path: '/birthdays', Icon: Cake },
+    { label: 'Events', detail: '1 upcoming', path: '/events', Icon: CalendarDays },
+  ];
+
+  return <div className="space-y-5 px-[18px] pb-8 pt-1">
+    <section>
+      <p className="text-[12px] font-medium uppercase tracking-[.12em] text-[#9c9690]">Monday, October 12</p>
+      <h2 className="mt-2 text-[24px] font-medium leading-tight tracking-[-.7px]">Good morning, {member?.firstName}</h2>
+      <p className="mt-1 text-[13px] text-[#817c76]">Here&rsquo;s what&rsquo;s happening with your family.</p>
+    </section>
+
+    <SearchBox value={searchQuery} setValue={setSearchQuery} placeholder="Find a person, family, or event…"/>
+
     {searchQuery.trim() ? <SearchResults query={searchQuery} go={go}/> : <>
-    <section><SectionTitle action={<Button onClick={() => go('/directory')} className="min-h-12 px-2 text-[12px] font-medium text-[#e64d08]">All families</Button>}>Family directory</SectionTitle><div className="space-y-2">{groups.map(group => <GroupTile key={group.id} groupId={group.id} go={go}/>)}</div></section>
-    <section><SectionTitle action={<Button onClick={() => go('/birthdays')} className="min-h-12 px-2 text-[12px] font-medium text-[#e64d08]">View all</Button>}>Birthdays today</SectionTitle><Button onClick={() => go('/birthdays')} className="flex min-h-[82px] w-full items-center gap-3 rounded-[22px] bg-[#efece7] p-4 text-left"><span className="flex"><Photo id="robert" className="size-10 rounded-xl border-2 border-[#efece7]"/>{todaysBirthdays.slice(1,3).map(member => <Photo key={member.id} id={member.id} className="-ml-3 size-10 rounded-xl border-2 border-[#efece7]"/>)}</span><span className="flex-1"><strong className="block text-[14px]">{todaysBirthdays.length} birthdays today</strong><span className="text-[12px] text-[#8c857e]">{todaysBirthdays.map(member => member.firstName).join(' · ')}</span></span><Cake size={19} className="text-[#a75a34]"/></Button></section>
-    <section><SectionTitle action={<Button onClick={() => go('/events')} className="min-h-12 px-2 text-[12px] font-medium text-[#e64d08]">All events</Button>}>Upcoming events</SectionTitle><Button onClick={() => go('/events/picnic')} className="flex min-h-[92px] w-full items-center gap-3 rounded-[22px] bg-[#efece7] p-4 text-left"><span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[#e8e1d9] text-center"><CalendarDays size={21}/></span><span className="min-w-0 flex-1"><strong className="block text-[14px]">{event.title}</strong><span className="mt-1 block text-[12px] text-[#8c857e]">Oct 18 · 9:00 AM · Lake Union Park</span></span><ChevronRight size={18}/></Button></section>
-    <section><SectionTitle action={<Button onClick={() => go('/announcements')} className="min-h-12 px-2 text-[12px] font-medium text-[#e64d08]">View all</Button>}>Announcements</SectionTitle><Button onClick={() => go('/announcements/directory')} className="flex w-full items-center gap-3 rounded-[22px] bg-[#efece7] p-4 text-left"><span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#e8e1d9]"><Megaphone size={18}/></span><span className="flex-1"><span className="text-[12px] text-[#9b948d]">Community admin · 2h ago</span><strong className="mt-1 block text-[14px]">Our directory is growing</strong><span className="mt-1 block text-[12px] text-[#8c857e]">8 new families joined us this month.</span></span><ChevronRight size={18}/></Button></section>
-    <p className="flex items-center justify-center gap-1.5 pb-2 text-[12px] text-[#a49c94]"><Heart size={12}/> Made for the people who make a community feel like home.</p>
+      <section aria-labelledby="quick-access-title">
+        <h3 id="quick-access-title" className="mb-3 text-[13px] font-medium text-[#6f6963]">Quick access</h3>
+        <div className="grid grid-cols-2 gap-2.5">
+          {quickActions.map(({ label, detail, path, Icon }) => <Button key={label} onClick={() => go(path)} className="group flex min-h-[82px] items-center gap-3 rounded-[20px] border border-[#e7e0d8] bg-white/75 p-3 text-left shadow-[0_4px_14px_rgba(68,52,38,.04)] transition hover:border-[#d8c9bc] hover:bg-white active:scale-[.98]">
+            <span className="grid size-10 shrink-0 place-items-center rounded-[14px] bg-[#f0e7df] text-[#a75027]"><Icon size={19}/></span>
+            <span className="min-w-0"><strong className="block text-[13px] font-medium">{label}</strong><span className="mt-1 block text-[11px] text-[#918981]">{detail}</span></span>
+          </Button>)}
+        </div>
+      </section>
+
+      <section className="overflow-hidden rounded-[26px] bg-[#25211e] text-white shadow-[0_14px_32px_rgba(60,44,31,.12)]">
+        <div className="flex items-center justify-between px-5 pb-3 pt-4">
+          <div><p className="text-[11px] font-medium uppercase tracking-[.13em] text-white/55">Today</p><h3 className="mt-1 text-[17px] font-medium">Celebrate together</h3></div>
+          <span className="grid size-10 place-items-center rounded-full bg-white/10 text-[#ff9664]"><Cake size={19}/></span>
+        </div>
+        <Button onClick={() => go('/birthdays')} className="flex min-h-[76px] w-full items-center gap-3 border-t border-white/10 px-5 py-3 text-left transition hover:bg-white/[.06] active:bg-white/10">
+          <span className="flex shrink-0 -space-x-2.5">{todaysBirthdays.slice(0, 3).map(person => <Photo key={person.id} id={person.id} className="size-10 rounded-xl border-2 border-[#25211e]"/>)}</span>
+          <span className="min-w-0 flex-1"><strong className="block text-[13px] font-medium">{todaysBirthdays.length} birthdays today</strong><span className="mt-1 block truncate text-[11px] text-white/55">{todaysBirthdays.map(person => person.firstName).join(' · ')}</span></span>
+          <ChevronRight size={18} className="shrink-0 text-white/45"/>
+        </Button>
+      </section>
+
+      <section>
+        <SectionTitle action={<Button onClick={() => go('/events')} className="min-h-12 px-2 text-[12px] font-medium text-[#e64d08]">See calendar</Button>}>Next up</SectionTitle>
+        <Button onClick={() => go('/events/picnic')} className="flex min-h-[88px] w-full items-center gap-3 rounded-[22px] bg-[#efece7] p-4 text-left transition hover:bg-[#e9e5df] active:scale-[.99]">
+          <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[#fffaf5] text-[#b55a31]"><CalendarDays size={21}/></span>
+          <span className="min-w-0 flex-1"><span className="text-[11px] font-medium uppercase tracking-[.08em] text-[#a15b39]">Sunday, Oct 18</span><strong className="mt-1 block truncate text-[14px] font-medium">{event.title}</strong><span className="mt-1 block text-[11px] text-[#8c857e]">9:00 AM · Lake Union Park</span></span>
+          <ChevronRight size={18} className="shrink-0 text-[#8c857e]"/>
+        </Button>
+      </section>
+
+      <section>
+        <SectionTitle action={<Button onClick={() => go('/directory')} className="min-h-12 px-2 text-[12px] font-medium text-[#e64d08]">Browse all</Button>}>Your community</SectionTitle>
+        <Button onClick={() => go(community ? `/directory/${community.id}` : '/directory')} className="flex min-h-[78px] w-full items-center gap-3 rounded-[22px] border border-[#e7e0d8] bg-white/65 p-4 text-left transition hover:bg-white active:scale-[.99]">
+          <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#e8e1d9]"><UsersRound size={19}/></span>
+          <span className="min-w-0 flex-1"><strong className="block text-[14px] font-medium">{community?.name ?? 'Family directory'}</strong><span className="mt-1 block text-[12px] text-[#8c857e]">{familyCount} families · {members.length} people</span></span>
+          <ChevronRight size={18} className="shrink-0 text-[#8c857e]"/>
+        </Button>
+      </section>
+
+      <Button onClick={() => go('/announcements/directory')} className="flex min-h-[64px] w-full items-center gap-3 rounded-[20px] bg-[#f1ece6] px-4 text-left">
+        <Megaphone size={18} className="shrink-0 text-[#a75a34]"/><span className="min-w-0 flex-1"><strong className="block text-[12px] font-medium">Our directory is growing</strong><span className="mt-1 block truncate text-[11px] text-[#8c857e]">8 new families joined this month</span></span><ChevronRight size={17} className="text-[#8c857e]"/>
+      </Button>
     </>}
   </div>;
 }
@@ -196,7 +251,7 @@ export default function KinfolkApp() {
   const isDirectory = path === '/directory';
   const isOwnFamily = path === '/my-family';
   const isProfile = path === '/profile';
-  const title = path === '/' ? 'Home' : isDirectory ? 'Families' : groupRoute ? groupById(groupRoute)?.name ?? 'Family group' : isOwnFamily ? 'My family' : isProfile ? 'My profile' : path === '/notifications' ? 'Notifications' : path === '/birthdays' ? 'Birthdays' : path === '/events' ? 'Events' : path === '/events/picnic' ? 'Family picnic' : path === '/announcements' ? 'Community board' : path === '/announcements/directory' ? 'Our directory is growing' : path === '/search' ? 'Search' : 'Kinfolk';
+  const title = path === '/' ? 'Kinfolk' : isDirectory ? 'Families' : groupRoute ? groupById(groupRoute)?.name ?? 'Family group' : isOwnFamily ? 'My family' : isProfile ? 'My profile' : path === '/notifications' ? 'Notifications' : path === '/birthdays' ? 'Birthdays' : path === '/events' ? 'Events' : path === '/events/picnic' ? 'Family picnic' : path === '/announcements' ? 'Community board' : path === '/announcements/directory' ? 'Our directory is growing' : path === '/search' ? 'Search' : 'Kinfolk';
   const login = path === '/login' || path === '/login/verify';
   const navigateBack = () => { if (isOwnFamily) go('/profile'); else if (groupRoute) go('/directory'); else back(); };
   const phoneKey = phone.replace(/\D/g, '').slice(-10);
