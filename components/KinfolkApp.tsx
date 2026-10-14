@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from 'next/navigation';
-import { ArrowLeft, ArrowRight, Cake, CalendarDays, ChevronRight, Mail, Megaphone, Phone, SlidersHorizontal, UserRound, UsersRound } from 'lucide-react';
+import { ArrowDownUp, ArrowLeft, ArrowRight, Bell, Cake, CalendarDays, ChevronRight, Mail, Megaphone, Phone, Share, SlidersHorizontal, UserRound, UsersRound } from 'lucide-react';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import AddressMap from './AddressMap';
 import AppHeader from './AppHeader';
@@ -26,43 +26,33 @@ function Home({ memberId, go, searchQuery, setSearchQuery }: ScreenProps & { sea
   const member = memberById(memberId);
   const family = familyByMember(memberId);
   const community = groupById(family?.groupId);
-  const todaysBirthdays = members.filter(person => person.birthday === 'October 12');
   const familyCount = groups.reduce((total, group) => total + group.familyIds.length, 0);
-  const quickActions = [
-    { label: 'Directory', detail: `${groups.length} family groups`, path: '/directory', Icon: UsersRound },
-    { label: 'Birthdays', detail: `${todaysBirthdays.length} today`, path: '/birthdays', Icon: Cake },
-    { label: 'Community board', detail: 'Latest updates', path: '/announcements', Icon: Megaphone },
-  ];
-
-  return <div className="space-y-5 px-[18px] pb-8 pt-1">
-    <section>
-      <p className="text-[12px] font-medium uppercase tracking-[.12em] text-[#9c9690]">Monday, October 12</p>
-      <h2 className="mt-2 text-[24px] font-medium leading-tight tracking-[-.7px]">Good morning, {member?.firstName}</h2>
-      <p className="mt-1 text-[13px] text-[#817c76]">Here&rsquo;s what&rsquo;s happening with your family.</p>
+  const city = member?.location.split(',')[0] ?? 'your community';
+  const today = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric' }).format(new Date());
+  async function inviteFriends() {
+    if (navigator.share) await navigator.share({ title: 'Join me on Kinfolk', text: 'Let?s stay connected with our family community on Kinfolk.', url: window.location.origin }).catch(() => undefined);
+    else go('/directory');
+  }
+  return <div className="space-y-8 px-5 pb-10 pt-10 sm:px-8">
+    <section className="relative pt-1">
+      <Button onClick={() => go('/notifications')} className="absolute right-0 top-[78px] grid size-12 place-items-center rounded-full" aria-label="Notifications"><Bell size={23} strokeWidth={1.7}/></Button>
+      <h2 className="max-w-[330px] text-[clamp(38px,10vw,54px)] font-normal leading-[1.12] tracking-[-2.8px]">Good morning<br/>from <span className="text-[#f05a24]">{city}</span></h2>
+      <p className="mt-7 inline-flex rounded-full bg-[#eeebe7] px-4 py-2 text-[15px] text-[#6f6a66]">{today}</p>
     </section>
-
-    <SearchBox value={searchQuery} setValue={setSearchQuery} placeholder="Find a person or family…"/>
-
     {searchQuery.trim() ? <SearchResults query={searchQuery} go={go}/> : <>
-      <section aria-labelledby="quick-access-title">
-        <h3 id="quick-access-title" className="mb-3 text-[13px] font-medium text-[#6f6963]">Quick access</h3>
-        <div className="grid grid-cols-2 gap-2.5">
-          {quickActions.map(({ label, detail, path, Icon }) => <Button key={label} onClick={() => go(path)} className="group flex min-h-[82px] items-center gap-3 rounded-[20px] border border-[#e7e0d8] bg-white/75 p-3 text-left shadow-[0_4px_14px_rgba(68,52,38,.04)] transition hover:border-[#d8c9bc] hover:bg-white active:scale-[.98]">
-            <span className="grid size-10 shrink-0 place-items-center rounded-[14px] bg-[#f0e7df] text-[#a75027]"><Icon size={19}/></span>
-            <span className="min-w-0"><strong className="block text-[13px] font-medium">{label}</strong><span className="mt-1 block text-[11px] text-[#918981]">{detail}</span></span>
-          </Button>)}
-        </div>
-      </section>
-
       <section>
-        <SectionTitle action={<Button onClick={() => go('/directory')} className="min-h-12 px-2 text-[12px] font-medium text-[#e64d08]">Browse all</Button>}>Your community</SectionTitle>
-        <Button onClick={() => go(community ? `/directory/${community.id}` : '/family-groups')} className="flex min-h-[78px] w-full items-center gap-3 rounded-[22px] border border-[#e7e0d8] bg-white/65 p-4 text-left transition hover:bg-white active:scale-[.99]">
-          <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#e8e1d9]"><UsersRound size={19}/></span>
-          <span className="min-w-0 flex-1"><strong className="block text-[14px] font-medium">{community?.name ?? 'Family directory'}</strong><span className="mt-1 block text-[12px] text-[#8c857e]">{familyCount} families · {members.length} people</span></span>
-          <ChevronRight size={18} className="shrink-0 text-[#8c857e]"/>
-        </Button>
+        <h3 className="mb-4 text-[25px] font-semibold tracking-[-.8px]">Invite your friends</h3>
+        <button onClick={inviteFriends} className="flex min-h-[116px] w-full items-center gap-4 rounded-[28px] bg-[#eeebe7] px-5 py-5 text-left transition active:scale-[.99]">
+          <span className="flex-1 text-[17px] leading-[1.45]">Know someone who lives here or has plans to visit? <strong className="font-medium text-[#4779d1]">Invite them</strong> to Kinfolk.</span>
+          <span className="grid size-[62px] shrink-0 place-items-center rounded-full bg-[#e7e2dc]"><Share size={23} strokeWidth={1.8}/></span>
+        </button>
       </section>
-
+      <section>
+        <div className="mb-4 flex items-center justify-between"><h3 className="text-[25px] font-semibold tracking-[-.8px]">Recently added plans</h3><Button onClick={() => go('/events')} className="grid size-12 place-items-center rounded-full" aria-label="View all plans"><ArrowDownUp size={22} strokeWidth={1.8}/></Button></div>
+        <button onClick={() => go('/events')} className="w-full rounded-[24px] bg-[#eeebe7] p-5 text-left"><p className="text-[16px] font-medium">{event.title}</p><p className="mt-2 text-[13px] text-[#817c76]">{event.date} ? {event.time} ? {event.place}</p></button>
+      </section>
+      <section className="pt-1"><SearchBox value={searchQuery} setValue={setSearchQuery} placeholder="Find a person or family?"/></section>
+      <section><SectionTitle action={<Button onClick={() => go('/directory')} className="min-h-12 px-2 text-[13px] text-[#f05a24]">View all</Button>}>Your community</SectionTitle><Button onClick={() => go(community ? `/directory/${community.id}` : '/family-groups')} className="flex min-h-[78px] w-full items-center gap-3 rounded-[22px] bg-[#eeebe7] p-4 text-left"><span className="grid size-11 place-items-center rounded-full bg-[#e7e2dc]"><UsersRound size={19}/></span><span className="min-w-0 flex-1"><strong className="block text-[14px] font-medium">{community?.name ?? 'Family directory'}</strong><span className="mt-1 block text-[12px] text-[#817c76]">{familyCount} families ? {members.length} people</span></span><ChevronRight size={18}/></Button></section>
     </>}
   </div>;
 }
@@ -299,10 +289,10 @@ export default function KinfolkApp() {
   if (path === '/welcome' && memberId) return <Welcome memberId={memberId} onContinue={finishWelcome}/>;
   if (login && !memberId) return <PhoneFrame screenClassName="bg-[#f6f2ef]"><StatusBar/><section className="flex min-h-0 flex-1 flex-col overflow-y-auto px-7 pb-7 pt-5"><Button onClick={() => path === '/login/verify' ? go('/login') : undefined} className="grid size-12 place-items-center rounded-full bg-[#f0f0f0] disabled:opacity-30" aria-label="Go back" disabled={path !== '/login/verify'}><ArrowLeft size={20}/></Button><div className="mt-[15vh]"><p className="text-[38px] font-normal tracking-[-1.8px]">{path === '/login/verify' ? 'check your messages' : 'log in'}</p><p className="mt-2 text-[14px] text-[#888]">{path === '/login/verify' ? `enter the code sent to ${phone}` : 'enter the number you used to join Kinfolk'}</p></div>{path === '/login/verify' ? <form onSubmit={verifyCode} className="mt-10"><label htmlFor="otp" className="mb-2 block text-[12px] font-semibold tracking-[1px]">VERIFICATION CODE</label><input id="otp" autoComplete="one-time-code" inputMode="numeric" maxLength={6} value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0,6))} placeholder="• • • • • •" className="h-[62px] w-full rounded-xl bg-[#f0f0f0] px-4 text-center text-[22px] tracking-[8px] outline-none focus:ring-2 focus:ring-[#ff5500]"/><p role="alert" className="min-h-7 pt-2 text-[12px] text-red-600">{loginError}</p><Button type="submit" variant="primary" className="mt-3 min-h-[58px] w-full text-[14px] tracking-[1px]">CONTINUE</Button><p className="mt-5 text-center text-[12px] text-[#777]">Demo code: 123456</p></form> : <form onSubmit={requestCode} className="mt-10"><label htmlFor="phone" className="mb-2 block text-[12px] font-semibold tracking-[1px]">PHONE NUMBER</label><div className="flex gap-3"><span className="grid h-[58px] w-[76px] shrink-0 place-items-center rounded-xl bg-[#f0f0f0] text-[15px]">+1⌄</span><input id="phone" type="tel" autoComplete="tel-national" inputMode="tel" value={phone} onChange={e => setPhone(e.target.value)} className="h-[58px] min-w-0 flex-1 rounded-xl bg-[#f0f0f0] px-4 text-[16px] outline-none focus:ring-2 focus:ring-[#ff5500]"/></div><p role="alert" className="min-h-7 pt-2 text-[12px] text-red-600">{loginError}</p><Button type="submit" variant="primary" className="mt-3 min-h-[58px] w-full text-[14px] tracking-[1px]">CONTINUE</Button><p className="mt-5 text-center text-[12px] text-[#777]">Preview account: (206) 555-0104 · no SMS is sent</p></form>}<p className="mt-auto pt-6 text-center text-[12px] text-[#999]">For approved community members</p></section></PhoneFrame>;
 
-  const page = <div key={path}>{path === '/' && <Home memberId={memberId} go={go} back={navigateBack} searchQuery={searchQuery} setSearchQuery={setSearchQuery}/ >}{isDirectory && <DirectoryList memberId={memberId} go={go}/ >}{isFamilyGroups && <FamilyGroups go={go}/ >}{groupRoute && <Directory memberId={memberId} go={go} back={navigateBack} groupId={groupRoute}/ >}{isOwnFamily && <Directory memberId={memberId} go={go} back={navigateBack} groupId={familyByMember(memberId)?.groupId} ownFamily/>}{isProfile && <Profile memberId={memberId} go={go} back={navigateBack} onLogout={logout}/ >}{path === '/notifications' && <Notifications memberId={memberId} go={go} back={navigateBack}/ >}{path === '/birthdays' && <Birthdays memberId={memberId} go={go} back={navigateBack}/ >}{path === '/events' && <Events memberId={memberId} go={go} back={navigateBack}/ >}{path === '/events/picnic' && <EventDetail/>}{path === '/announcements' && <Announcements memberId={memberId} go={go} back={navigateBack}/ >}{path === '/announcements/directory' && <Announcements memberId={memberId} go={go} back={navigateBack} detail/>}{path === '/search' && <div className="space-y-2 pt-2"><div className="px-[18px]"><SearchBox value={searchQuery} setValue={setSearchQuery} compact autoFocus/></div><SearchResults query={searchQuery} go={go}/></div>}</div>;
+  const page = <div key={path} className="screen-transition">{path === '/' && <Home memberId={memberId} go={go} back={navigateBack} searchQuery={searchQuery} setSearchQuery={setSearchQuery}/ >}{isDirectory && <DirectoryList memberId={memberId} go={go}/ >}{isFamilyGroups && <FamilyGroups go={go}/ >}{groupRoute && <Directory memberId={memberId} go={go} back={navigateBack} groupId={groupRoute}/ >}{isOwnFamily && <Directory memberId={memberId} go={go} back={navigateBack} groupId={familyByMember(memberId)?.groupId} ownFamily/>}{isProfile && <Profile memberId={memberId} go={go} back={navigateBack} onLogout={logout}/ >}{path === '/notifications' && <Notifications memberId={memberId} go={go} back={navigateBack}/ >}{path === '/birthdays' && <Birthdays memberId={memberId} go={go} back={navigateBack}/ >}{path === '/events' && <Events memberId={memberId} go={go} back={navigateBack}/ >}{path === '/events/picnic' && <EventDetail/>}{path === '/announcements' && <Announcements memberId={memberId} go={go} back={navigateBack}/ >}{path === '/announcements/directory' && <Announcements memberId={memberId} go={go} back={navigateBack} detail/>}{path === '/search' && <div className="space-y-2 pt-2"><div className="px-[18px]"><SearchBox value={searchQuery} setValue={setSearchQuery} compact autoFocus/></div><SearchResults query={searchQuery} go={go}/></div>}</div>;
   if (!memberId) return null;
   return <PhoneFrame screenClassName="bg-[#f6f2ef]">
-    <StatusBar/><AppHeader title={title} go={go} back={navigateBack} canBack={path !== '/' && !isProfile && !isDirectory && path !== '/events'} showSearch={path !== '/' && path !== '/search' && !isDirectory && !isFamilyGroups && !groupRoute && !isProfile} showNotifications={path !== '/notifications'}/><main ref={contentRef} className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain pb-24 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">{page}</main><BottomNavigation pathname={path} memberId={memberId} go={go}/>
+    <StatusBar/>{path !== '/' && <AppHeader title={title} go={go} back={navigateBack} canBack={path !== '/' && !isProfile && !isDirectory && path !== '/events'} showSearch={path !== '/search' && !isDirectory && !isFamilyGroups && !groupRoute && !isProfile} showNotifications={path !== '/notifications'}/>}<main ref={contentRef} className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain pb-24 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">{page}</main><BottomNavigation pathname={path} memberId={memberId} go={go}/>
   </PhoneFrame>;
 }
 
