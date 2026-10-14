@@ -5,22 +5,17 @@
   --color-surface: #efece7;
   --color-action: #e8e1d9;
   --color-accent: #ff5500;
-  --font-sans: var(--font-inter), "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sans: var(--font-host-grotesk), "Host Grotesk", sans-serif;
 }
 
 @layer base {
   * { @apply box-border; }
-  body { @apply m-0 min-h-svh bg-[#e9e5e1] font-sans text-black antialiased; }
+  body { @apply m-0 min-h-svh bg-[#e9e5e1] text-black antialiased; font-family: var(--font-host-grotesk), "Host Grotesk", sans-serif; }
   button, input, select { font: inherit; }
   button { @apply cursor-pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
   button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible { @apply outline-2 outline-offset-2 outline-[#ff5500]; }
   a { @apply no-underline; color: inherit; }
   ::selection { @apply bg-[#ff5500]/20; }
-}
-
-@keyframes screen-in {
-  from { opacity: .82; }
-  to { opacity: 1; }
 }
 
 @keyframes backdrop-in { from { opacity: 0; } to { opacity: 1; } }

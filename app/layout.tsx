@@ -1,15 +1,11 @@
 import type { Metadata } from 'next';
-import localFont from 'next/font/local';
+import { Host_Grotesk } from 'next/font/google';
 import './globals.css';
 
-const inter = localFont({
-  src: [
-    { path: '../public/fonts/inter-400.ttf', weight: '400' },
-    { path: '../public/fonts/inter-500.ttf', weight: '500' },
-    { path: '../public/fonts/inter-600.ttf', weight: '600' },
-    { path: '../public/fonts/inter-700.ttf', weight: '700' },
-  ],
-  variable: '--font-inter',
+const hostGrotesk = Host_Grotesk({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-host-grotesk',
   display: 'swap',
 });
 
@@ -34,5 +30,5 @@ export const viewport = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body className={`${inter.variable} ${inter.className}`}>{children}</body></html>;
+  return <html lang="en"><body className={hostGrotesk.variable}>{children}</body></html>;
 }
