@@ -1,30 +1,58 @@
 @import "tailwindcss";
 
 @theme {
+  --color-brand: #0086D6;
+  --color-brand-hover: #006BAA;
+  --color-brand-soft: #e6f4fc;
+  --color-canvas: #e9e5e1;
   --color-paper: #f6f2ef;
   --color-surface: #efece7;
+  --color-surface-alt: #eeebe7;
+  --color-surface-raised: #f8f5f1;
+  --color-surface-active: #f3efea;
+  --color-card: #fffdfa;
   --color-action: #e8e1d9;
-  --color-accent: #ff5500;
+  --color-action-hover: #e9e5df;
+  --color-action-soft: #e7e2dc;
+  --color-ink: #25211e;
+  --color-ink-strong: #171513;
+  --color-ink-soft: #302b27;
+  --color-text-secondary: #6f6a66;
+  --color-text-muted: #817c76;
+  --color-text-subtle: #8b837b;
+  --color-text-soft: #999087;
+  --color-text-faint: #a49c94;
+  --color-text-disabled: #b6ada5;
+  --color-field: #f0f0f0;
+  --color-border: #d8d0c8;
+  --color-border-soft: #e7e0d8;
+  --color-border-focus: #d2bca9;
+  --color-frame: #65615d;
+  --color-frame-dark: #252525;
+  --color-status-danger: #97614a;
+  --color-status-danger-soft: #f9e1d4;
+  --color-status-success: #3f7a3a;
+  --color-status-success-soft: #e4efe2;
   --font-sans: var(--font-host-grotesk), "Host Grotesk", sans-serif;
 }
 
 @layer base {
   * { @apply box-border; }
-  body { @apply m-0 min-h-svh bg-[#e9e5e1] text-black antialiased; font-family: var(--font-host-grotesk), "Host Grotesk", sans-serif; }
+  body { @apply m-0 min-h-svh bg-canvas font-sans text-ink antialiased; }
   button, input, select { font: inherit; }
   button { @apply cursor-pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
-  button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible { @apply outline-2 outline-offset-2 outline-[#ff5500]; }
+  button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible { @apply outline-2 outline-offset-2 outline-brand; }
   a { @apply no-underline; color: inherit; }
-  ::selection { @apply bg-[#ff5500]/20; }
+  ::selection { background: color-mix(in srgb, var(--color-brand) 20%, transparent); }
 }
 
 @keyframes backdrop-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes backdrop-out { from { opacity: 1; } to { opacity: 0; } }
 @keyframes sheet-in { from { transform: translateY(100%); } to { transform: translateY(0); } }
 @keyframes sheet-out { from { transform: translateY(0); } to { transform: translateY(100%); } }
-@keyframes screen-enter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes screen-enter { from { opacity: .94; } to { opacity: 1; } }
 
-.screen-transition { animation: screen-enter .22s ease-out both; }
+.screen-transition { animation: screen-enter .12s ease-out both; }
 @media (prefers-reduced-motion: reduce) {
   .screen-transition { animation: none; }
 }
@@ -52,7 +80,7 @@
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
-  background: linear-gradient(180deg, rgba(255, 255, 255, .55) 0%, rgba(255, 255, 255, 0) 48%), radial-gradient(120% 90% at 50% 120%, rgba(255, 85, 0, .06), transparent 60%);
+  background: linear-gradient(180deg, rgba(255, 255, 255, .55) 0%, rgba(255, 255, 255, 0) 48%), radial-gradient(120% 90% at 50% 120%, color-mix(in srgb, var(--color-brand) 6%, transparent), transparent 60%);
   mix-blend-mode: screen;
 }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
@@ -64,8 +92,8 @@
 }
 
 @media (max-width: 450px), (pointer: coarse) {
-  .phone-stage { min-height: 100svh; padding: 0; background: #f6f2ef; }
-  .phone-frame { width: 100%; height: 100svh; border: 0; border-radius: 0; padding: 0; box-shadow: none; }
+  .phone-stage { min-height: 100dvh; padding: 0; background: var(--color-paper); }
+  .phone-frame { width: 100%; height: 100dvh; border: 0; border-radius: 0; padding: 0; box-shadow: none; }
   .phone-screen { border-radius: 0; }
   .phone-status-bar, .phone-home-indicator { display: none; }
 }

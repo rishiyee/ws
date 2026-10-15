@@ -2,7 +2,7 @@
 
 ## Project Structure
 
-This project uses the Next.js App Router. Routes and metadata live in `app/`; the client side app shell and screens live in `components/KinfolkApp.tsx`; typed sample directory data and relationship helpers live in `lib/data.ts`. Tailwind CSS v4 is configured in `app/globals.css`. Mock portraits and local fonts are in `public/`. The original product requirements and visual reference screenshots remain in `family/` for context.
+This project uses the Next.js App Router. Routes and metadata live in `app/`; the client side app shell and screens live in `components/VinklingApp.tsx`; typed sample directory data and relationship helpers live in `lib/data.ts`. Tailwind CSS v4 is configured in `app/globals.css`. Mock portraits and local fonts are in `public/`. The original product requirements and visual reference screenshots remain in `family/` for context.
 
 ## Development and Build
 

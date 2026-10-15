@@ -4,8 +4,8 @@ export const dynamic = 'force-static';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Kinfolk Family Directory',
-    short_name: 'Kinfolk',
+    name: 'Vinkling Family Directory',
+    short_name: 'Vinkling',
     description: 'Your family and community in one place.',
     start_url: '/',
     display: 'standalone',

@@ -10,12 +10,12 @@ const hostGrotesk = Host_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: 'Kinfolk — Family directory',
+  title: 'Vinkling — Family directory',
   description: 'Your family and community in one place.',
-  applicationName: 'Kinfolk',
+  applicationName: 'Vinkling',
   appleWebApp: {
     capable: true,
-    title: 'Kinfolk',
+    title: 'Vinkling',
     statusBarStyle: 'default',
   },
   icons: {
@@ -30,5 +30,5 @@ export const viewport = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body className={hostGrotesk.variable}>{children}</body></html>;
+  return <html lang="en" suppressHydrationWarning><body className={hostGrotesk.variable}>{children}</body></html>;
 }

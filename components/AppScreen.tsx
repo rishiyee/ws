@@ -1,5 +1,5 @@
-import KinfolkApp from './KinfolkApp';
+import VinklingApp from './VinklingApp';
 
 export default function AppScreen() {
-  return <KinfolkApp />;
+  return <VinklingApp />;
 }
