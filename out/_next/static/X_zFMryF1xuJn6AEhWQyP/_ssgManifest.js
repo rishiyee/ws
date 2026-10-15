@@ -1,1 +1,0 @@
-self.__SSG_MANIFEST=new Set(["\u002Fannouncements\u002F[announcementId]","\u002Fdirectory\u002F[groupId]","\u002Fevents\u002F[eventId]"]);self.__SSG_MANIFEST_CB&&self.__SSG_MANIFEST_CB()
