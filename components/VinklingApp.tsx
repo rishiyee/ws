@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from 'next/navigation';
-import { ArrowDownUp, ArrowLeft, ArrowRight, Bell, Cake, CalendarDays, CheckCircle2, ChevronRight, Mail, Megaphone, Phone, Share, SlidersHorizontal, UserRound, UsersRound } from 'lucide-react';
+import { ArrowDownUp, ArrowLeft, ArrowRight, Bell, Cake, CalendarDays, CheckCircle2, ChevronRight, Mail, Megaphone, Monitor, Moon, Phone, Share, SlidersHorizontal, Sun, UserRound, UsersRound } from 'lucide-react';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import AddressMap from './AddressMap';
 import AppHeader from './AppHeader';
@@ -31,6 +31,7 @@ const peopleByPhone = new Map(members.map(member => [member.phone?.replace(/\D/g
 
 type ScreenProps = { memberId: string; go: (path: string) => void; back: () => void };
 type Notice = { id: string; title: string; detail: string; destination: string; read: boolean; icon: ReactNode };
+type ThemePreference = 'light' | 'dark' | 'system';
 
 function maskPhoneNumber(phone?: string) {
   const digits = phone?.replace(/\D/g, '') ?? '';
@@ -69,7 +70,12 @@ function Home({ memberId, go, searchQuery, setSearchQuery }: ScreenProps & { sea
       </div>
       <p className="inline-flex rounded-full bg-surface-alt px-4 py-2 text-[15px] text-text-secondary">{today}</p>
     </section>
+    <section aria-label="Search the directory" className="space-y-2">
+      <h3 className="text-[20px] font-semibold tracking-[-.4px]">Find family and friends</h3>
+      <SearchBox value={searchQuery} setValue={setSearchQuery} placeholder="Search people, families, places…"/>
+    </section>
     {searchQuery.trim() ? <SearchResults query={searchQuery} go={go}/> : <>
+    {!searchQuery.trim() && family && <FamilyMembers family={family} memberId={memberId} go={go} title="Your family" familyHref={`/families/${family.id}`}/>}
       <section className="space-y-2">
         <h3 className="text-[25px] font-semibold tracking-[-.8px]">Invite your friends</h3>
         <button onClick={inviteFriends} className="flex min-h-[116px] w-full items-center gap-4 rounded-[28px] bg-surface-alt px-5 py-5 text-left transition active:scale-[.99]">
@@ -77,10 +83,29 @@ function Home({ memberId, go, searchQuery, setSearchQuery }: ScreenProps & { sea
           <span className="grid size-[62px] shrink-0 place-items-center rounded-full bg-action-soft"><Share size={23} strokeWidth={1.8}/></span>
         </button>
       </section>
-      <section aria-label="Search the directory"><SearchBox value={searchQuery} setValue={setSearchQuery} placeholder="Find a person or family?"/></section>
       <section className="space-y-2"><SectionTitle action={<Button onClick={() => go('/directory')} className="min-h-12 px-2 text-[13px] text-brand">View all</Button>}>Your community</SectionTitle><Button onClick={() => go(community ? `/directory/${community.id}` : '/family-groups')} className="flex min-h-[78px] w-full items-center gap-3 rounded-[22px] bg-surface-alt p-4 text-left"><span className="grid size-11 place-items-center rounded-full bg-action-soft"><UsersRound size={19}/></span><span className="min-w-0 flex-1"><strong className="block text-[14px] font-medium">{community?.name ?? 'Family directory'}</strong><span className="mt-1 block text-[12px] text-text-muted">{familyCount} families ? {members.length} people</span></span><ChevronRight size={18}/></Button></section>
     </>}
   </div>;
+}
+
+function FamilyMembers({ family, memberId, go, title, familyHref }: { family: NonNullable<ReturnType<typeof familyByMember>>; memberId: string; go: (path: string) => void; title: string; familyHref: string }) {
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const closeSheet = useCallback(() => setSelectedId(null), []);
+  const familyMembers = family.memberIds.map(id => memberById(id)).filter((person): person is NonNullable<typeof person> => Boolean(person));
+  return <section aria-label={`${title} members`}>
+    <SectionTitle action={<Button onClick={() => go(familyHref)} className="min-h-12 px-2 text-[13px] text-brand">View family</Button>}>{title}</SectionTitle>
+    <div className="space-y-3">
+      {familyMembers.map(person => <Button key={person.id} onClick={() => setSelectedId(person.id)} className="flex min-h-[104px] w-full items-center justify-between gap-4 rounded-[24px] bg-surface-alt px-5 py-4 text-left transition active:scale-[.99]">
+        <span className="min-w-0 flex-1">
+          <strong className="block truncate text-[19px] font-medium tracking-[-.4px]">{person.name}</strong>
+          <span className="mt-1 block truncate text-[14px] text-text-muted">{relationshipLabel(person.id, memberId, family.representativeId)}</span>
+          <span className="mt-1 block truncate text-[12px] text-text-subtle">{person.location}</span>
+        </span>
+        <Photo id={person.id} className="size-[72px] rounded-full"/>
+      </Button>)}
+    </div>
+    {selectedId && <MemberProfileSheet memberId={selectedId} perspectiveId={memberId} close={closeSheet}/>}
+  </section>;
 }
 
 function FamilyCard({ familyId, perspectiveId, visibleMemberIds }: { familyId: string; perspectiveId: string; visibleMemberIds?: string[] }) {
@@ -195,16 +220,16 @@ function SharedMemberDetail({ memberId, go }: { memberId: string; go: (path: str
   </div>;
 }
 
-function Profile({ memberId, go, onLogout }: ScreenProps & { onLogout: () => void }) {
+function Profile({ memberId, go, onLogout, themePreference, setThemePreference }: ScreenProps & { onLogout: () => void; themePreference: ThemePreference; setThemePreference: (preference: ThemePreference) => void }) {
   const member = memberById(memberId)!;
   const family = familyByMember(memberId)!;
-  const group = groupById(family.groupId)!;
   const [copied, setCopied] = useState('');
   const relationship = relationshipLabel(memberId, family.representativeId, family.representativeId);
   async function copy(value: string, label: string) { try { await navigator.clipboard.writeText(value); setCopied(`${label} copied`); window.setTimeout(() => setCopied(''), 1800); } catch { setCopied('Select the contact text to copy it.'); } }
   return <div className="space-y-7 px-[18px] pb-8 pt-2">
     <section className="space-y-3" aria-label="Your profile"><ProfileCard memberId={memberId}/><ShareButton title={`${member.name}'s profile`} label="Share profile" text={`View ${member.name}'s profile on Vinkling.`} path={`/members/${member.id}`}/></section>
-    <section className="space-y-2"><SectionTitle>My family</SectionTitle><Button onClick={() => go('/my-family')} className="flex min-h-[76px] w-full items-center gap-3 rounded-[22px] bg-surface p-4 text-left transition hover:bg-action-hover"><span className="grid size-11 shrink-0 place-items-center rounded-full bg-action"><UsersRound size={19}/></span><span className="min-w-0 flex-1"><strong className="block text-[14px] font-medium">{family.name}</strong><span className="mt-1 block text-[12px] text-text-subtle">{group.name} · {family.memberIds.length} members</span></span><ChevronRight size={18}/></Button></section>
+    <section><SurfaceCard><SectionTitle>Appearance</SectionTitle><p className="mb-4 text-[12px] text-text-muted">Choose how Vinkling looks on this device.</p><div role="group" aria-label="Theme preference" className="grid grid-cols-3 gap-2">{([{ value: 'light', label: 'Light', Icon: Sun }, { value: 'dark', label: 'Dark', Icon: Moon }, { value: 'system', label: 'System', Icon: Monitor }] as const).map(({ value, label, Icon }) => <button key={value} type="button" aria-pressed={themePreference === value} onClick={() => setThemePreference(value)} className={`flex min-h-[60px] flex-col items-center justify-center gap-1.5 rounded-2xl text-[12px] font-medium transition ${themePreference === value ? 'bg-brand text-white' : 'bg-surface-active text-ink'}`}><Icon size={18}/>{label}</button>)}</div></SurfaceCard></section>
+    <FamilyMembers family={family} memberId={memberId} go={go} title="My family" familyHref="/my-family"/>
     <section><SurfaceCard><SectionTitle>Personal details</SectionTitle><dl className="grid grid-cols-2 gap-x-4 gap-y-5 text-[12px]"><Detail label="Date of birth" value={member.dob}/><Detail label="Family relationship" value={memberId === family.representativeId ? 'Family representative' : relationship}/><Detail label="Occupation" value={member.occupation}/><Detail label="Education" value={member.education}/><Detail label="Current location" value={member.location}/><Detail label="Ancestral hometown" value={member.hometown}/></dl></SurfaceCard></section>
     <section><SurfaceCard><SectionTitle>Contact details</SectionTitle>{member.phone && <ContactRow icon={<Phone size={17}/>} label="Mobile number" value={member.phone} href={`tel:${member.phone.replace(/[^+\d]/g, '')}`} copy={() => copy(member.phone!, 'Mobile number')} copied={copied === 'Mobile number copied'}/ >}{member.email && <ContactRow icon={<Mail size={17}/>} label="Email address" value={member.email} href={`mailto:${member.email}`} copy={() => copy(member.email!, 'Email address')} copied={copied === 'Email address copied'}/ >}{copied.startsWith('Select') && <p aria-live="polite" className="pt-1 text-[12px] text-text-muted">{copied}</p>}</SurfaceCard></section>
     <section><SurfaceCard><h2 className="text-[14px] font-medium">Need to update your details?</h2><p className="mt-2 text-[12px] leading-5 text-text-muted">Contact the community admin to request a profile or family change.</p><div className="mt-4"><ContactActions memberId="admin"/></div></SurfaceCard></section>
@@ -283,6 +308,7 @@ export default function VinklingApp() {
   const router = useRouter();
   const [memberId, setMemberId] = useState('');
   const [sessionReady, setSessionReady] = useState(false);
+  const [themePreference, setThemePreference] = useState<ThemePreference>('system');
   const [phone, setPhone] = useState('98765 43210');
   const [countryCode, setCountryCode] = useState('IN');
   const [otp, setOtp] = useState(['', '', '', '']);
@@ -299,8 +325,23 @@ export default function VinklingApp() {
   useEffect(() => {
     const session = localStorage.getItem(sessionKey);
     if (session && memberById(session)) setMemberId(session);
+    const savedTheme = localStorage.getItem('vinkling-theme');
+    if (savedTheme === 'light' || savedTheme === 'dark' || savedTheme === 'system') setThemePreference(savedTheme);
     setSessionReady(true);
   }, []);
+  useEffect(() => {
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const applyTheme = () => {
+      document.documentElement.dataset.theme = themePreference === 'system' ? (media.matches ? 'dark' : 'light') : themePreference;
+    };
+    applyTheme();
+    if (themePreference === 'system') media.addEventListener('change', applyTheme);
+    return () => media.removeEventListener('change', applyTheme);
+  }, [themePreference]);
+  const changeThemePreference = (preference: ThemePreference) => {
+    localStorage.setItem('vinkling-theme', preference);
+    setThemePreference(preference);
+  };
   useEffect(() => {
     if (!sessionReady) return;
     const isPublic = path === '/login' || path === '/login/verify';
@@ -383,7 +424,7 @@ export default function VinklingApp() {
     </section></PhoneFrame>
   );
 
-  const page = <div key={path} className="screen-transition">{path === '/' && <Home memberId={memberId} go={go} back={navigateBack} searchQuery={searchQuery} setSearchQuery={setSearchQuery}/ >}{isDirectory && <DirectoryList memberId={memberId} go={go}/ >}{isFamilyGroups && <FamilyGroups go={go}/ >}{groupRoute && <Directory memberId={memberId} go={go} back={navigateBack} groupId={groupRoute}/ >}{familyRoute && <FamilyDetail familyId={familyRoute} perspectiveId={memberId} go={go}/ >}{memberRoute && <SharedMemberDetail memberId={memberRoute} go={go}/ >}{isOwnFamily && <Directory memberId={memberId} go={go} back={navigateBack} groupId={familyByMember(memberId)?.groupId} ownFamily/>}{isProfile && <Profile memberId={memberId} go={go} back={navigateBack} onLogout={logout}/ >}{path === '/notifications' && <Notifications memberId={memberId} go={go} back={navigateBack}/ >}{path === '/birthdays' && <Birthdays memberId={memberId} go={go} back={navigateBack}/ >}{path === '/events' && <Events memberId={memberId} go={go} back={navigateBack}/ >}{path === '/events/picnic' && <EventDetail/>}{path === '/announcements' && <Announcements memberId={memberId} go={go} back={navigateBack}/ >}{path === '/announcements/directory' && <Announcements memberId={memberId} go={go} back={navigateBack} detail/>}{path === '/search' && <div className="space-y-2 pt-2"><div className="px-[18px]"><SearchBox value={searchQuery} setValue={setSearchQuery} compact autoFocus/></div><SearchResults query={searchQuery} go={go}/></div>}</div>;
+  const page = <div key={path} className="screen-transition">{path === '/' && <Home memberId={memberId} go={go} back={navigateBack} searchQuery={searchQuery} setSearchQuery={setSearchQuery}/ >}{isDirectory && <DirectoryList memberId={memberId} go={go}/ >}{isFamilyGroups && <FamilyGroups go={go}/ >}{groupRoute && <Directory memberId={memberId} go={go} back={navigateBack} groupId={groupRoute}/ >}{familyRoute && <FamilyDetail familyId={familyRoute} perspectiveId={memberId} go={go}/ >}{memberRoute && <SharedMemberDetail memberId={memberRoute} go={go}/ >}{isOwnFamily && <Directory memberId={memberId} go={go} back={navigateBack} groupId={familyByMember(memberId)?.groupId} ownFamily/>}{isProfile && <Profile memberId={memberId} go={go} back={navigateBack} onLogout={logout} themePreference={themePreference} setThemePreference={changeThemePreference}/ >}{path === '/notifications' && <Notifications memberId={memberId} go={go} back={navigateBack}/ >}{path === '/birthdays' && <Birthdays memberId={memberId} go={go} back={navigateBack}/ >}{path === '/events' && <Events memberId={memberId} go={go} back={navigateBack}/ >}{path === '/events/picnic' && <EventDetail/>}{path === '/announcements' && <Announcements memberId={memberId} go={go} back={navigateBack}/ >}{path === '/announcements/directory' && <Announcements memberId={memberId} go={go} back={navigateBack} detail/>}{path === '/search' && <div className="space-y-2 pt-2"><div className="px-[18px]"><SearchBox value={searchQuery} setValue={setSearchQuery} compact autoFocus/></div><SearchResults query={searchQuery} go={go}/></div>}</div>;
   if (!memberId) return null;
   return <PhoneFrame screenClassName="bg-paper">
     <StatusBar/>{path !== '/' && <AppHeader title={title} go={go} back={navigateBack} canBack={path !== '/' && !isProfile && !isDirectory && path !== '/events' && path !== '/notifications'} showSearch={path !== '/search' && path !== '/notifications' && !isDirectory && !isFamilyGroups && !groupRoute && !isProfile} showNotifications={false}/>}<main ref={contentRef} className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain pb-24 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">{page}</main><BottomNavigation pathname={path} memberId={memberId} go={go}/>

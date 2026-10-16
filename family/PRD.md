@@ -19,7 +19,7 @@ Build a responsive website where approved community members can discover familie
 
 | Area | Requirement |
 | --- | --- |
-| Audience | Multiple families within a community |
+| Audience | Community members ages 15–65 across multiple families |
 | Access | Approved community members only, after sign-in |
 | Onboarding | Admins create family profiles and invite members |
 | Profile management | Community admins alone create and edit profiles |
@@ -30,6 +30,16 @@ Build a responsive website where approved community members can discover familie
 | Platform | Responsive website |
 | Authentication | Phone number with OTP |
 | Exclusion | Member messaging |
+
+## 4.1 Audience and usability
+
+The product serves community members from ages 15 through 65. Screens should be straightforward for younger members while remaining comfortable to read and operate for older members.
+
+- Use clear labels and familiar navigation; do not rely on icons or color alone to explain actions.
+- Keep text readable, maintain strong contrast, and provide visible focus states.
+- Make buttons and other interactive controls easy to tap, with clear feedback after actions.
+- Present family photos alongside names and useful details so members can recognize people quickly.
+- Keep layouts responsive and avoid requiring precise gestures or hidden interactions.
 
 ## 4. Users and permissions
 

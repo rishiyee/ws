@@ -33,8 +33,48 @@
   --color-status-danger-soft: #f9e1d4;
   --color-status-success: #3f7a3a;
   --color-status-success-soft: #e4efe2;
-  --font-sans: var(--font-host-grotesk), "Host Grotesk", sans-serif;
+  --font-sans: var(--font-inter), Inter, sans-serif;
 }
+
+:root { color-scheme: light; }
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --color-brand: #73caff;
+  --color-brand-hover: #9bdcff;
+  --color-brand-soft: #17394e;
+  --color-canvas: #101214;
+  --color-paper: #17191c;
+  --color-surface: #202327;
+  --color-surface-alt: #25292d;
+  --color-surface-raised: #2b3035;
+  --color-surface-active: #343a40;
+  --color-card: #1d2024;
+  --color-action: #34383d;
+  --color-action-hover: #3d4248;
+  --color-action-soft: #30353a;
+  --color-ink: #f2f0ed;
+  --color-ink-strong: #ffffff;
+  --color-ink-soft: #e8e4df;
+  --color-text-secondary: #c9c4bf;
+  --color-text-muted: #aaa49e;
+  --color-text-subtle: #99928b;
+  --color-text-soft: #88817a;
+  --color-text-faint: #79736d;
+  --color-text-disabled: #625d58;
+  --color-field: #292d31;
+  --color-border: #41464c;
+  --color-border-soft: #30353a;
+  --color-border-focus: #52768d;
+  --color-frame: #4e5358;
+  --color-frame-dark: #111214;
+  --color-status-danger: #e4a78d;
+  --color-status-danger-soft: #432c26;
+  --color-status-success: #a1cf98;
+  --color-status-success-soft: #263b29;
+}
+html[data-theme="dark"] [class~="bg-white"] { background-color: var(--color-card) !important; }
+html[data-theme="dark"] [class~="bg-white/75"] { background-color: color-mix(in srgb, var(--color-card) 75%, transparent) !important; }
+html[data-theme="dark"] [class~="bg-white/80"] { background-color: color-mix(in srgb, var(--color-card) 80%, transparent) !important; }
 
 @layer base {
   * { @apply box-border; }
