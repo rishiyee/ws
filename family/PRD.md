@@ -19,21 +19,25 @@ Build a responsive website where approved community members can discover familie
 
 | Area | Requirement |
 | --- | --- |
-| Audience | Community members ages 15–65 across multiple families |
+| Audience | Invited community members aged 18 or older with an associated phone number |
 | Access | Approved community members only, after sign-in |
-| Onboarding | Admins create family profiles and invite members |
+| Onboarding | Admins create individual member accounts and invite members; a valid invitation grants access |
 | Profile management | Community admins alone create and edit profiles |
-| Profile content | Family and member information, relationships, occupations, birthdays, ancestral hometown, family history, and family tree |
+| Profile content | Family name, members, representative, address, and member details |
 | Discovery | Name search and filters for location, ancestral hometown, and occupation |
-| Visibility | All approved members can see all directory details |
-| Community features | Announcements, events, and birthday reminders |
+| Visibility | Approved members can see all directory details; family activity is admin-only |
+| Community features | Admin-managed announcements and events; notifications for announcements, events, and birthdays |
 | Platform | Responsive website |
-| Authentication | Phone number with OTP |
+| Authentication | Individual sign-in by phone or email verification code; session lasts until sign-out |
+| Community structure | Multiple communities with separate data; multiple equal-access admins under one role |
+| Family relationships | Admin-maintained family trees with derived relationship labels; members may belong to multiple families |
+| Family activity | All admin actions affecting a family are logged with admin name and timestamp for one year |
+| Family lifecycle | Admins can transfer or remove members, record births, deaths, and marriages, and archive records with history preserved |
 | Exclusion | Member messaging |
 
 ## 4.1 Audience and usability
 
-The product serves community members from ages 15 through 65. Screens should be straightforward for younger members while remaining comfortable to read and operate for older members.
+Only people aged 18 or older may sign in. Screens should be straightforward to use and comfortable to read across the adult age range.
 
 - Use clear labels and familiar navigation; do not rely on icons or color alone to explain actions.
 - Keep text readable, maintain strong contrast, and provide visible focus states.
@@ -45,15 +49,18 @@ The product serves community members from ages 15 through 65. Screens should be 
 
 ### Community admin
 
+- Use the community admin dashboard to manage separate community data.
 - Create, edit, archive, and restore family and member records.
-- Link relatives and maintain family trees.
-- Invite members, approve access, and revoke access.
-- Manage announcements and events.
+- Link relatives and maintain family trees; relationship labels are derived.
+- Invite members by phone or email; the invitation grants access after verification.
+- Transfer or remove members and record births, deaths, and marriages.
+- Manage announcements and events, and review each family’s admin-only activity history.
 - Correct contact details and dates, and resolve duplicate records.
 
 ### Approved member
 
-- Sign in using an invited, approved phone number.
+- Be at least 18 years old and have an associated phone number.
+- Sign in to an individual account using an invited phone number or email and a verification code.
 - Browse all active family and member profiles, including contact details, addresses, and birthdays.
 - Search and filter the directory.
 - View family histories, family trees, announcements, events, and birthday reminders.
@@ -62,17 +69,17 @@ The product serves community members from ages 15 through 65. Screens should be 
 ### Visitor or unapproved user
 
 - Can access the sign-in page but cannot access directory content.
-- Cannot gain community access simply by verifying a phone number.
+- Must have an invitation created by a community admin before verification; verification alone does not grant access.
 
 ## 5. Core journeys
 
 ### Admin adds a family
 
-1. Admin creates a family record with available details.
+1. Admin creates a family record with its name, members, representative, and address.
 2. Admin adds individual members and their relationships.
-3. Admin reviews and publishes the profile.
-4. Admin invites selected members using their phone numbers.
-5. An invited member verifies their phone number through OTP and receives approved access.
+3. Admin reviews and saves the family profile.
+4. Admin invites selected adult members using their phone number or email.
+5. An invited member verifies the associated phone number or email and receives access.
 
 ### Member finds a person or family
 
@@ -89,14 +96,15 @@ The product serves community members from ages 15 through 65. Screens should be 
 
 ## 6. Functional requirements
 
-### FR-01: Phone OTP authentication and membership
+### FR-01: Individual authentication and invited membership
 
-- Accept phone numbers with country codes.
-- Send and verify time-limited, single-use OTPs.
+- Require each account holder to be at least 18 and associate a phone number with the account.
+- Allow sign-in using a phone number or email address and a time-limited, single-use verification code.
+- Deliver verification codes through the configured phone or email provider.
 - Provide resend controls, attempt limits, and clear expiry and failure states.
-- Grant directory access only when the verified number belongs to an approved, active account.
-- Support sign-out and secure session expiry.
-- Admins can invite, deactivate, and update accounts; phone-number changes require verification of the new number.
+- Grant access when an invited account verifies its associated phone number or email.
+- Keep members signed in until they sign out; support secure session revocation by an administrator.
+- Admins can invite, deactivate, update, transfer, or remove member accounts.
 - Revoked accounts must lose access, including through existing sessions.
 
 ### FR-02: Family profiles
@@ -158,10 +166,14 @@ The product serves community members from ages 15 through 65. Screens should be 
 ### FR-09: Admin workspace
 
 - Provide lists for families, people, accounts, announcements, and events.
+- Support multiple communities with data isolated by community.
+- Allow multiple administrators with equal access under one community admin role.
 - Support record creation, editing, publishing where applicable, and archiving.
 - Flag likely duplicate people or families for admin review without automatically merging them.
-- Record who made each administrative change and when.
+- Record all administrative actions affecting a family, including the administrator and timestamp; retain entries for one year and show them only to admins.
 - Confirm archive and access-revocation actions before applying them.
+- Support member transfers between families and recording births, marriages, and deaths.
+- Send member notifications for announcements, events, and birthdays.
 
 ## 7. Information architecture
 
@@ -178,17 +190,18 @@ The product serves community members from ages 15 through 65. Screens should be 
 
 | Entity | Main fields |
 | --- | --- |
-| Community | Name, timezone |
-| Family | ID, name, photo, contact phone, address, location, ancestral hometown, history, status |
+| Community | ID, name, timezone |
+| Family | ID, community ID, name, members, representative, address, location, ancestral hometown, family history, status |
 | Person | ID, family ID, name, photo, phone, address, occupation, birth date, deceased status |
 | Relationship | ID, source person, related person, relationship type |
-| Account | ID, verified phone number, optional person link, role, approval/access status |
-| Invitation | ID, phone number, creator, status, expiry |
+| Account | ID, community ID, verified phone/email, person links, admin/member role, access status |
+| Invitation | ID, community ID, phone or email, creator, status, expiry |
 | Announcement | ID, title, body, author, publication date, status |
 | Event | ID, title, description, start/end time, venue/link, organizer, status |
-| Audit entry | Actor, action, affected record, timestamp |
+| Family activity entry | Community, family, admin actor, action, affected record, timestamp, one-year retention |
+| Family milestone | Community, family, birth/marriage/death type, people involved, date, notes |
 
-Phone numbers used for accounts must be unique. Person records may have no phone number or share a household contact number.
+Phone numbers and email addresses used for accounts must be unique. Person records may have no personal contact details or share a household contact number.
 
 ## 9. Non-functional requirements
 
@@ -205,14 +218,14 @@ Phone numbers used for accounts must be unique. Person records may have no phone
 
 ## 10. First-release scope
 
-Include all confirmed features: responsive website, phone OTP, admin invitations and access management, admin-managed family and person profiles, family history and trees, search and filters, announcements, events, and in-app birthday reminders.
+Include all confirmed features: responsive website, individual phone/email code sign-in, admin invitations and access management, multiple communities with separate data, admin-managed family and person profiles, family history and trees, one-year admin-only activity records, family milestones, search and filters, announcements, events, and in-app birthday notifications.
 
 Exclude member messaging, member profile editing, public directory access, native mobile apps, event payments, and event registration. Bulk import, export, and external reminder channels are future candidates unless added to launch scope.
 
 ## 11. Acceptance criteria
 
 1. An unauthenticated or unapproved user cannot retrieve any directory content through pages, APIs, or protected image URLs.
-2. An invited, approved member can verify their phone through OTP and access the directory.
+2. An invited adult member can verify their phone or email through a code and access the directory.
 3. A revoked member loses access through both new and existing sessions.
 4. An admin can create a family, add people and relationships, and publish a profile visible to members.
 5. Members can read all published details but cannot change records, including through direct API requests.
@@ -221,7 +234,8 @@ Exclude member messaging, member profile editing, public directory access, nativ
 8. Published announcements and upcoming events appear correctly; drafts remain hidden and cancellations are visible.
 9. Birthday reminders follow the community timezone and omit deceased people and unknown birthdays.
 10. Core sign-in, search, profile, and admin flows work on phone and desktop screen sizes.
-11. The product contains no member messaging feature.
+11. Family activity records identify the administrator and timestamp, are visible only to admins, and expire after one year.
+12. The product contains no member messaging feature.
 
 ## 12. Success measures
 
@@ -237,12 +251,11 @@ Measure approved-member activation, monthly active members, profile completeness
 
 ## 14. Assumptions and remaining decisions
 
-The following are proposed defaults, not answers confirmed during requirements gathering:
+The following decisions remain open:
 
-- The first deployment serves one community, with multiple admin accounts supported.
 - English is the initial interface language; other languages remain undecided.
 - Birthday reminders appear in-app only.
 - Family and person fields beyond names are optional to support incomplete records.
 - Profile changes can be requested outside the app; an in-app correction workflow is not yet in scope.
 - The initial admin account is provisioned during setup through a restricted administrative process.
-- Community timezone, expected family/member counts, hosting, OTP provider, budget, launch date, retention policy, and treatment of February 29 birthday reminders need confirmation before implementation.
+- Community timezone, expected family/member counts, hosting, OTP providers, budget, launch date, and treatment of February 29 birthday reminders need confirmation before implementation.

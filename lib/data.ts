@@ -31,6 +31,13 @@ export type FamilyGroup = {
   familyIds: string[];
 };
 
+export type Community = {
+  id: string;
+  name: string;
+  location: string;
+  familyGroupIds: string[];
+};
+
 export const members: Member[] = [
   { id: 'robert', name: 'Robert Miller', firstName: 'Robert', photo: 'ravi', dob: 'October 12, 1972', birthday: 'October 12', occupation: 'Teacher', education: 'Master of Education', phone: '+1 (512) 555-0101', email: 'robert.miller@example.com', bloodGroup: 'B+', location: 'Austin', hometown: 'Portland' },
   { id: 'patricia', name: 'Patricia Johnson', firstName: 'Patricia', photo: 'priya', dob: 'October 12, 1986', birthday: 'October 12', occupation: 'Doctor', education: 'Doctor of Medicine (MD)', phone: '+1 (206) 555-0102', email: 'patricia.johnson@example.com', bloodGroup: 'A+', location: 'Seattle', hometown: 'Portland' },
@@ -55,6 +62,11 @@ export const members: Member[] = [
 export const groups: FamilyGroup[] = [
   { id: 'oakwood', name: 'Oakwood', location: 'Seattle', familyIds: ['davis', 'johnson', 'carter', 'brooks', 'reed', 'bennett', 'hayes', 'foster', 'perry', 'long', 'gray', 'ward'] },
   { id: 'maplewood', name: 'Maplewood', location: 'Austin', familyIds: ['miller', 'wilson'] },
+];
+
+export const communities: Community[] = [
+  { id: 'seattle-community', name: 'Oakwood Community', location: 'Seattle', familyGroupIds: ['oakwood'] },
+  { id: 'austin-community', name: 'Maplewood Community', location: 'Austin', familyGroupIds: ['maplewood'] },
 ];
 
 export const families: Family[] = [
