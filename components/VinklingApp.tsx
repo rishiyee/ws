@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { ArrowDownUp, ArrowLeft, ArrowRight, Bell, Cake, CalendarDays, CheckCircle2, ChevronRight, Mail, Megaphone, Monitor, Moon, Phone, Share, SlidersHorizontal, Sun, UserRound, UsersRound } from 'lucide-react';
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import AddressMap from './AddressMap';
 import AppHeader from './AppHeader';
 import BottomNavigation from './BottomNavigation';
@@ -18,6 +18,7 @@ import CountryCodeDropdown, { type CountryCode } from './CountryCodeDropdown';
 import PhoneNumberField from './PhoneNumberField';
 import OtpInput from './OtpInput';
 import { admin, event, familyById, familyByMember, groupById, groups, memberById, members, relationshipLabel, searchDirectory } from '../lib/data';
+import { subscribeToFamilyRecords } from '../lib/familyRecords';
 
 const sessionKey = 'vinkling-next-session-v1';
 const demoOtpCode = '1234';
@@ -104,7 +105,7 @@ function FamilyMembers({ family, memberId, go, title, familyHref }: { family: No
         <Photo id={person.id} className="size-[72px] rounded-full"/>
       </Button>)}
     </div>
-    {selectedId && <MemberProfileSheet memberId={selectedId} perspectiveId={memberId} close={closeSheet}/>}
+    {selectedId && <MemberProfileSheet memberId={selectedId} perspectiveId={memberId} familyId={family.id} close={closeSheet}/>}
   </section>;
 }
 
@@ -121,18 +122,18 @@ function FamilyCard({ familyId, perspectiveId, visibleMemberIds }: { familyId: s
     </Button>
     {detailsOpen && <BottomSheet title={family.name} close={() => setDetailsOpen(false)}><div className="space-y-4">
       <div className="flex items-center gap-3"><Photo id={representative.id} className="size-12 rounded-full"/><div><p className="text-[13px] font-medium">{representative.name}</p><p className="mt-1 text-[12px] text-text-subtle">Family representative · {memberIds.length} {memberIds.length === 1 ? 'member' : 'members'}</p></div></div>
-      <ShareButton title={family.name} label="Share family" text={`View the ${family.name} on Vinkling.`} path={`/families/${family.id}`}/>
+      {!family.id.startsWith('family-') && <ShareButton title={family.name} label="Share family" text={`View the ${family.name} on Vinkling.`} path={`/families/${family.id}`}/>}
       <ContactActions memberId={representative.id}/>
-      <section aria-label="Family members"><SectionTitle>Family members</SectionTitle><ul className="divide-y divide-border-soft">{memberIds.map(id => <li key={id}><MemberCard memberId={id} perspectiveId={perspectiveId} open={() => setSelectedId(id)}/></li>)}</ul></section>
+      <section aria-label="Family members"><SectionTitle>Family members</SectionTitle><ul className="divide-y divide-border-soft">{memberIds.map(id => <li key={id}><MemberCard memberId={id} perspectiveId={perspectiveId} representativeId={family.representativeId} open={() => setSelectedId(id)}/></li>)}</ul></section>
       <section><SectionTitle>Family address</SectionTitle><AddressMap address={family.address} label={family.name}/></section>
     </div></BottomSheet>}
-    {selectedId && <MemberProfileSheet memberId={selectedId} perspectiveId={perspectiveId} close={closeSheet}/>}
+    {selectedId && <MemberProfileSheet memberId={selectedId} perspectiveId={perspectiveId} familyId={family.id} close={closeSheet}/>}
   </article>;
 }
 
-function MemberCard({ memberId, perspectiveId, open }: { memberId: string; perspectiveId: string; open: () => void }) {
+function MemberCard({ memberId, perspectiveId, representativeId, open }: { memberId: string; perspectiveId: string; representativeId: string; open: () => void }) {
   const member = memberById(memberId)!;
-  const relation = relationshipLabel(memberId, perspectiveId, familyByMember(memberId)?.representativeId);
+  const relation = relationshipLabel(memberId, perspectiveId, representativeId);
   return <Button onClick={open} aria-label={`View ${member.name}'s profile`} className="flex min-h-12 w-full items-center gap-3 rounded-[20px] bg-surface-raised p-3 text-left"><Photo id={member.id} className="size-12 rounded-2xl"/><span className="min-w-0 flex-1"><strong className="block text-[14px] font-medium">{member.name}</strong><span className="mt-1 block text-[12px] text-brand-hover">{relation}</span><span className="mt-0.5 block truncate text-[12px] text-text-subtle">{member.occupation}</span></span><ChevronRight size={18} className="shrink-0 text-text-subtle"/></Button>;
 }
 
@@ -142,10 +143,8 @@ function Directory({ memberId, go, groupId, ownFamily = false }: ScreenProps & {
   const [location, setLocation] = useState('');
   const [hometown, setHometown] = useState('');
   const [occupation, setOccupation] = useState('');
-  const result = useMemo(() => searchDirectory(query), [query]);
-  const filteredFamilies = useMemo(() => {
-    return result.foundFamilies.filter(family => (!groupId || family.groupId === groupId) && (!ownFamily || family.memberIds.includes(memberId)) && (!location || groupById(family.groupId)?.location === location) && (!hometown || family.memberIds.some(id => memberById(id)?.hometown === hometown)) && (!occupation || family.memberIds.some(id => memberById(id)?.occupation === occupation))).sort((a, b) => a.name.localeCompare(b.name));
-  }, [result, groupId, location, hometown, occupation, ownFamily, memberId]);
+  const result = searchDirectory(query);
+  const filteredFamilies = result.foundFamilies.filter(family => (!groupId || family.groupId === groupId) && (!ownFamily || family.memberIds.includes(memberId)) && (!location || groupById(family.groupId)?.location === location) && (!hometown || family.memberIds.some(id => memberById(id)?.hometown === hometown)) && (!occupation || family.memberIds.some(id => memberById(id)?.occupation === occupation))).sort((a, b) => a.name.localeCompare(b.name));
   const group = groupById(groupId);
   const currentFamily = ownFamily ? familyByMember(memberId) : undefined;
   const normalizedQuery = query.trim().toLowerCase();
@@ -202,7 +201,7 @@ function FamilyDetail({ familyId, perspectiveId, go }: { familyId: string; persp
   return <div className="space-y-5 px-[18px] pb-8 pt-2">
     <ShareButton title={family.name} label="Share family" text={`View the ${family.name} on Vinkling.`} path={`/families/${family.id}`}/>
     <SurfaceCard><div className="flex items-center gap-3"><Photo id={family.representativeId} className="size-12 rounded-full"/><div><p className="text-[14px] font-medium">{memberById(family.representativeId)?.name}</p><p className="mt-1 text-[12px] text-text-subtle">Family representative · {group?.name}</p></div></div></SurfaceCard>
-    <section><SectionTitle>Family members</SectionTitle><div className="space-y-2">{family.memberIds.map(id => <MemberCard key={id} memberId={id} perspectiveId={perspectiveId} open={() => go(`/members/${id}`)}/>)}</div></section>
+    <section><SectionTitle>Family members</SectionTitle><div className="space-y-2">{family.memberIds.map(id => <MemberCard key={id} memberId={id} perspectiveId={perspectiveId} representativeId={family.representativeId} open={() => go(`/members/${id}`)}/>)}</div></section>
     <section><SectionTitle>Family address</SectionTitle><AddressMap address={family.address} label={`${family.name} address`}/></section>
   </div>;
 }
@@ -253,11 +252,11 @@ function Birthdays({ memberId }: ScreenProps) {
   </div>;
 }
 
-function MemberProfileSheet({ memberId, perspectiveId, close }: { memberId: string; perspectiveId: string; close: () => void }) {
+function MemberProfileSheet({ memberId, perspectiveId, familyId, close }: { memberId: string; perspectiveId: string; familyId?: string; close: () => void }) {
   const [activeId, setActiveId] = useState(memberId);
   useEffect(() => setActiveId(memberId), [memberId]);
   const member = memberById(activeId)!;
-  const family = familyByMember(activeId);
+  const family = (familyId && familyById(familyId)?.memberIds.includes(activeId) ? familyById(familyId) : undefined) ?? familyByMember(activeId);
   const activeRelation = relationshipLabel(activeId, perspectiveId, family?.representativeId);
   return <BottomSheet title="Member profile" close={close}><div className="space-y-4">
     <div className="flex items-center gap-3"><Photo id={member.id} className="size-[64px] rounded-full"/><div className="min-w-0 flex-1"><h3 className="text-[16px] font-medium">{member.name}</h3><p className="mt-1 text-[12px] text-brand-hover">{activeRelation}{family && <span className="text-text-subtle"> · {family.name}</span>}</p></div></div>
@@ -315,7 +314,9 @@ export default function VinklingApp() {
   const [loginError, setLoginError] = useState('');
   const [otpMemberId, setOtpMemberId] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [, setFamilyVersion] = useState(0);
   const contentRef = useRef<HTMLElement>(null);
+  useEffect(() => subscribeToFamilyRecords(() => setFamilyVersion(version => version + 1)), []);
   const path = pathname || '/';
   const go = (destination: string) => {
     if (destination === path) return;

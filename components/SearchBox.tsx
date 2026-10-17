@@ -33,7 +33,7 @@ export default function SearchBox({ value, setValue, compact = false, autoFocus 
       {query && (
         <Button
           type="button"
-          className="grid size-9 place-items-center rounded-full text-text-muted"
+          className="grid size-12 shrink-0 place-items-center rounded-full text-text-muted"
           aria-label="Clear search"
           onClick={() => update('')}
         >

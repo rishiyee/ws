@@ -1,7 +1,7 @@
 "use client";
 
 import Image from 'next/image';
-import { Check, Copy, Mail, Phone, Search, Wifi, X } from 'lucide-react';
+import { Check, Copy, Mail, Phone, Wifi, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import Button from './Button';
@@ -64,6 +64,4 @@ export function ContactRow({ icon, label, value, href, copy, copied = false }: {
   return <div className="flex min-h-[66px] items-center gap-3 border-b border-border-soft last:border-0"><span className="grid size-9 shrink-0 place-items-center rounded-full bg-action">{icon}</span><a className="min-w-0 flex-1" href={href}><span className="block text-[12px] text-text-subtle">{label}</span><strong className="mt-1 block break-all text-[12px] font-medium">{value}</strong></a><Button onClick={copy} className="inline-flex min-h-12 items-center gap-1.5 rounded-xl px-2 text-[12px] text-text-muted" aria-label={copied ? `${label} copied` : `Copy ${label}`}><span aria-live="polite" className="inline-flex items-center gap-1.5">{copied ? <Check size={14}/> : <Copy size={14}/>} {copied ? 'Copied' : 'Copy'}</span></Button></div>;
 }
 
-export function Empty({ title, text }: { title: string; text: string }) {
-  return <div className="rounded-[24px] bg-surface px-5 py-9 text-center"><span className="mx-auto grid size-12 place-items-center rounded-full bg-white/80"><Search size={19}/></span><h2 className="mt-3 text-[15px] font-medium">{title}</h2><p className="mt-2 text-[12px] text-text-muted">{text}</p></div>;
-}
+export { default as Empty } from './EmptyState';

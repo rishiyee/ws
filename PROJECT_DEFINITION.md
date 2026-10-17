@@ -69,7 +69,7 @@ The dashboard provides community administrators, who have equal access under the
 
 The product supports multiple communities with separate data, individual accounts for invited members aged 18 or older, phone or email verification codes, a community admin dashboard, admin-only per-family activity history, and the member-facing directory and community features described above. Administrative and member access must be separated so family activity and record management are available only to administrators.
 
-The current codebase includes the member-facing screens and an administrator dashboard interface. It currently reads fictional sample records; persistent multi-community storage, account and role enforcement, invitations, record editing, and audit logging still need backend implementation. Member-to-member messaging is outside the product scope.
+The current codebase includes the member-facing screens and an administrator dashboard interface. Family creation and editing work as a browser saved demo using fictional sample members. Persistent multi-community storage, account and role enforcement, invitations, other record editing, and audit logging still need backend implementation. Member-to-member messaging is outside the product scope.
 
 ## Design and usability principles
 

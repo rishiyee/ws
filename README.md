@@ -11,6 +11,10 @@ npm run dev
 
 Open http://127.0.0.1:3000. The demo account is `+91 98765 43210`. Login is local demo behavior and does not send SMS.
 
+## Manage demo families
+
+Open http://127.0.0.1:3000/admin and select **Families**. Use **Add family** or a row's **Edit** button to set the name, family group, address, existing members, and representative. Changes are saved in this browser and appear in the member directory after refresh. They are not shared across devices or stored on a server. Newly added families can be browsed in their family group; direct share links require backend storage.
+
 ## Project structure
 
 - `app/` — App Router layout and route files, plus the global Tailwind theme.
@@ -19,6 +23,7 @@ Open http://127.0.0.1:3000. The demo account is `+91 98765 43210`. Login is loca
 - `components/Button.tsx` — shared button element with primary, secondary, quiet, icon, and destructive variants.
 - `components/PhoneFrame.tsx`, `components/ProfileCard.tsx`, `components/SearchBox.tsx` — reusable interface components.
 - `lib/data.ts` — typed family, member, relationship, event, and search data.
+- `lib/familyRecords.ts` — browser saved demo family changes shared by the admin and member views.
 - `public/photos/` and `public/fonts/` — locally hosted mock portraits and Inter font files.
 - `family/PRD.md` — product requirements and archived Refero design references.
 
